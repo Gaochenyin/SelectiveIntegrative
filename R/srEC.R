@@ -22,6 +22,7 @@
 #' * sd: estimated standard errors for the aforementioned estimators.
 #' * subset.idx: a subset of indices of the external controls which have been selected for the
 #' final integrative estimation.
+#' @export
 srEC <- function(data_rt,
                  data_ec = NULL,
                  rt.ctrl = caret::trainControl(method = 'cv', number = 10),
