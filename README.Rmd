@@ -71,7 +71,7 @@ data_ec <- list(X = X.ec, A = A.ec, Y = Y.ec)
 Now, we have generated the RT dataset `data_rt` and the EC dataset `data_ec`. We are
 ready to implement our selective integrative estimation by calling `srEC()`
 ```{r echo=TRUE}
-library(SelectiveIntegrative)
+library(srEC)
 out <- srEC(data_rt = data_rt,
      data_ec = list(data_ec),
      method = 'gbm')

@@ -1,35 +1,28 @@
-Package: srEC
-Type: Package
+Package: SelectiveIntegrative
 Title: Selective Integrative Analyses of the Average Treatment Effect Combining External Controls with the Standard Randomized Clinic Trial
 Version: 1.0
-Authors@R: c(,
-    person("Chenyin", "Gao", , "cgao6@ncsu.edu", role = c("aut", "cre")),
-    person("Shu", "Yang", , "syang24@ncsu.edu", role = c("aut"))
+Authors@R: c(
+    person("Shu", "Yang", , "syang24@ncsu.edu", role = c("aut")),
+    person("Chenyin", "Gao", , "cgao6@ncsu.edu", role = c("aut", "cre"))
     )
 Description: Selective Integrative Analyses of the Average Treatment Effect Combining External Controls with the Standard Randomized Clinic Trial.
 License: MIT + file LICENSE
-Depends: 
-    R (>= 4.0)
-Imports: 
-    glmnet (>= 4.1.4),
-    glue (>= 1.6.1),
-    lifecycle (>= 1.0.3),
-    magrittr,
-    rlang (>= 1.0.0),
-    stringi (>= 1.5.3),
-    vctrs (>= 0.4.0)
-Suggests: 
-    covr,
-    dplyr,
-    gt,
-    htmltools,
-    htmlwidgets,
-    knitr,
-    rmarkdown,
-    testthat (>= 3.0.0),
-    tibble
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-LazyData: true
 RoxygenNote: 7.2.1
+Imports: 
+    glmnet (>= 4.1.4),
+    magrittr,
+    rootSolve,
+    MASS,
+    expm,
+    kableExtra,
+    mvtnorm
+Suggests: 
+    knitr,
+    rmarkdown
 VignetteBuilder: knitr
+Depends: 
+    R (>= 2.10)
+LazyData: true
+
