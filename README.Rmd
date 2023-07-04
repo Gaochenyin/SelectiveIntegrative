@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 options(warn=-1)
 ```
 
-# selective and robust external-control (srEC)
+# selective and robust external-control (srEC) integrative estimation
 
 <!-- badges: start -->
 <!-- badges: end -->
