@@ -1,4 +1,4 @@
-Package: SelectiveIntegrative
+Package: srEC
 Type: Package
 Title: Selective Integrative Analyses of the Average Treatment Effect Combining External Controls with the Standard Randomized Clinic Trial
 Version: 1.0
