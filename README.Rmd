@@ -22,13 +22,13 @@ The srEC function is to develop an dynamic borrowing framework to incorporate in
 
 ## Installation with `devtools`:
 
-``` r
-devtools::install_github("Gaochenyin/ElasticIntegrative")
+```{r echo=TRUE}
+devtools::install_github("Gaochenyin/SelectiveIntegrative")
 ```
 
 ## Example
 
-```{r echo = TRUE}
+```{r echo=TRUE}
 # generate data for the whole population
 n_c.E <- 200; n_e.E <- 500
 N <- n_c.E + n_e.E

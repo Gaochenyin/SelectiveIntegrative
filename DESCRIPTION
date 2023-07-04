@@ -1,11 +1,12 @@
-Package: srEC
+Package: SelectiveIntegrative
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Title: Selective Integrative Analyses of the Average Treatment Effect Combining External Controls with the Standard Randomized Clinic Trial
+Version: 1.0
+Authors@R: c(,
+    person("Chenyin", "Gao", , "cgao6@ncsu.edu", role = c("aut", "cre")),
+    person("Shu", "Yang", , "syang24@ncsu.edu", role = c("aut"))
+    )
+Description: Selective Integrative Analyses of the Average Treatment Effect Combining External Controls with the Standard Randomized Clinic Trial.
 License: MIT + file LICENSE
 Depends: 
     R (>= 4.0)
