@@ -8,10 +8,12 @@
 
 The srEC function is to develop an dynamic borrowing framework to
 incorporate information from other external-control (EC) datasets with
-the gold-standard randomized trials. By adopting the subject-level bias
-framework, the comparability of each EC subject is assessed via a
-penalized estimation. The final integrative estimator will only
-incorporate the external subjects with the estimated bias being zero.
+the gold-standard randomized trials from [Gao et al.,
+(2023)](https://arxiv.org/pdf/2306.16642.pdf). By adopting the
+subject-level bias framework, the comparability of each EC subject is
+assessed via a penalized estimation. The final integrative estimator
+will only incorporate the external subjects with the estimated bias
+being zero (i.e., a comparable subset).
 
 ## Installation with `devtools`:
 
@@ -27,7 +29,8 @@ library(SelectiveIntegrative)
 n_c.E <- 200; n_e.E <- 500
 N <- n_c.E + n_e.E
 X1 <- rnorm(N); X2 <- rnorm(N)
-
+# omega: guage the unmeasured confounding for EC
+omega <- 0.3
 # generate the randomized trial population 
 ## generate the selection indicator for RT with expected sample size n_c.E
 alpha0.opt <- uniroot(function(alpha0){
@@ -39,7 +42,7 @@ eS <- exp(alpha0.opt -2 * X1 - 2 * X2)/
 delta <- rbinom(N, size = 1, prob = eS)
 X.rt <- cbind(X1, X2)[delta == 1, ]
 (n_c <- nrow(X.rt))
-#> [1] 204
+#> [1] 218
 ## generate the treatment assignment with marginal probability P.A
 P.A <- 0.5
 eta0.opt <- uniroot(function(eta0){
@@ -51,16 +54,16 @@ eA <- exp(eta0.opt - X.rt%*%c(1, 1))/
 A.rt <- rbinom(n_c, size = 1, prob = eA)
 ## generate the observed outcomes for RT
 Y.rt <- as.vector(1 +  X.rt%*%c(1, 1) + A.rt * X.rt%*%c(.3, .3) + rnorm(n_c) + 
-                    0.3 * rnorm(n_c)) # maintain a similar variation as the EC
+                    omega * rnorm(n_c)) # maintain a similar variation as the EC
 data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
 
 # generate the external control population
 X.ec <- cbind(X1, X2)[delta == 0, ]
 (n_h <- nrow(X.ec))
-#> [1] 496
+#> [1] 482
 A.ec <- 0
 ## generate the observed outcomes for EC (possibly confounded)
-Y.ec <- as.vector(1 +  X.ec%*%c(1, 1) + 0.3 * rnorm(n_h, mean = 1) + rnorm(n_h))
+Y.ec <- as.vector(1 +  X.ec%*%c(1, 1) + omega * rnorm(n_h, mean = 1) + rnorm(n_h))
 data_ec <- list(X = X.ec, A = A.ec, Y = Y.ec)
 ```
 
@@ -80,13 +83,13 @@ out <- srEC(data_rt = data_rt,
 # AIPW
 print(paste('AIPW: ', round(out$est$AIPW, 3), 
       ', S.E.: ', round(out$sd$AIPW, 3)))
-#> [1] "AIPW:  -0.513 , S.E.:  2.378"
+#> [1] "AIPW:  -0.593 , S.E.:  2.228"
 # ACW
 print(paste('ACW: ', round(out$est$ACW, 3), 
       ', S.E.: ', round(out$sd$ACW, 3)))
-#> [1] "ACW:  -0.847 , S.E.:  2.439"
+#> [1] "ACW:  -1.019 , S.E.:  2.369"
 # selective integrative estimation
 print(paste('Our: ', round(out$est$ACW.final, 3), 
       ', S.E.: ', round(out$sd$ACW.final, 3)))
-#> [1] "Our:  -0.531 , S.E.:  2.158"
+#> [1] "Our:  -0.582 , S.E.:  2.085"
 ```

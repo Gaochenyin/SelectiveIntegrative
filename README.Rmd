@@ -19,7 +19,7 @@ options(warn=-1)
 <!-- badges: start -->
 <!-- badges: end -->
 
-The srEC function is to develop an dynamic borrowing framework to incorporate information from other external-control (EC) datasets with the gold-standard randomized trials. By adopting the subject-level bias framework, the comparability of each EC subject is assessed via a penalized estimation. The final integrative estimator will only incorporate the external subjects with the estimated bias being zero.
+The srEC function is to develop an dynamic borrowing framework to incorporate information from other external-control (EC) datasets with the gold-standard randomized trials from [Gao et al., (2023)](https://arxiv.org/pdf/2306.16642.pdf). By adopting the subject-level bias framework, the comparability of each EC subject is assessed via a penalized estimation. The final integrative estimator will only incorporate the external subjects with the estimated bias being zero (i.e., a comparable subset).
 
 ## Installation with `devtools`:
 
@@ -35,7 +35,8 @@ library(SelectiveIntegrative)
 n_c.E <- 200; n_e.E <- 500
 N <- n_c.E + n_e.E
 X1 <- rnorm(N); X2 <- rnorm(N)
-
+# omega: guage the unmeasured confounding for EC
+omega <- 0.3
 # generate the randomized trial population 
 ## generate the selection indicator for RT with expected sample size n_c.E
 alpha0.opt <- uniroot(function(alpha0){
@@ -58,7 +59,7 @@ eA <- exp(eta0.opt - X.rt%*%c(1, 1))/
 A.rt <- rbinom(n_c, size = 1, prob = eA)
 ## generate the observed outcomes for RT
 Y.rt <- as.vector(1 +  X.rt%*%c(1, 1) + A.rt * X.rt%*%c(.3, .3) + rnorm(n_c) + 
-                    0.3 * rnorm(n_c)) # maintain a similar variation as the EC
+                    omega * rnorm(n_c)) # maintain a similar variation as the EC
 data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
 
 # generate the external control population
@@ -66,7 +67,7 @@ X.ec <- cbind(X1, X2)[delta == 0, ]
 (n_h <- nrow(X.ec))
 A.ec <- 0
 ## generate the observed outcomes for EC (possibly confounded)
-Y.ec <- as.vector(1 +  X.ec%*%c(1, 1) + 0.3 * rnorm(n_h, mean = 1) + rnorm(n_h))
+Y.ec <- as.vector(1 +  X.ec%*%c(1, 1) + omega * rnorm(n_h, mean = 1) + rnorm(n_h))
 data_ec <- list(X = X.ec, A = A.ec, Y = Y.ec)
 ```
 
