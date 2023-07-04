@@ -12,12 +12,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports: 
     glmnet (>= 4.1.4),
-    magrittr,
-    rootSolve,
-    MASS,
-    expm,
-    kableExtra,
-    mvtnorm
+    MASS
 Suggests: 
     knitr,
     rmarkdown
