@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 options(warn=-1)
 ```
 
-# selective and robust external-control (srEC) integrative estimation
+# Selective and robust external-control (srEC) integrative estimation
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -30,6 +30,7 @@ devtools::install_github("Gaochenyin/SelectiveIntegrative")
 ## Example
 
 ```{r echo=TRUE}
+library(SelectiveIntegrative)
 # generate data for the whole population
 n_c.E <- 200; n_e.E <- 500
 N <- n_c.E + n_e.E
@@ -72,7 +73,6 @@ data_ec <- list(X = X.ec, A = A.ec, Y = Y.ec)
 Now, we have generated the RT dataset `data_rt` and the EC dataset `data_ec`. We are
 ready to implement our selective integrative estimation by calling `srEC()`.
 ```{r  echo=TRUE, results='hide'}
-library(SelectiveIntegrative)
 out <- srEC(data_rt = data_rt,
      data_ec = list(data_ec),
      method = 'gbm')

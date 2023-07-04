@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# selective and robust external-control (srEC)
+# Selective and robust external-control (srEC) integrative estimation
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -22,6 +22,7 @@ devtools::install_github("Gaochenyin/SelectiveIntegrative")
 ## Example
 
 ``` r
+library(SelectiveIntegrative)
 # generate data for the whole population
 n_c.E <- 200; n_e.E <- 500
 N <- n_c.E + n_e.E
@@ -38,7 +39,7 @@ eS <- exp(alpha0.opt -2 * X1 - 2 * X2)/
 delta <- rbinom(N, size = 1, prob = eS)
 X.rt <- cbind(X1, X2)[delta == 1, ]
 (n_c <- nrow(X.rt))
-#> [1] 194
+#> [1] 204
 ## generate the treatment assignment with marginal probability P.A
 P.A <- 0.5
 eta0.opt <- uniroot(function(eta0){
@@ -56,7 +57,7 @@ data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
 # generate the external control population
 X.ec <- cbind(X1, X2)[delta == 0, ]
 (n_h <- nrow(X.ec))
-#> [1] 506
+#> [1] 496
 A.ec <- 0
 ## generate the observed outcomes for EC (possibly confounded)
 Y.ec <- as.vector(1 +  X.ec%*%c(1, 1) + 0.3 * rnorm(n_h, mean = 1) + rnorm(n_h))
@@ -68,7 +69,6 @@ Now, we have generated the RT dataset `data_rt` and the EC dataset
 estimation by calling `srEC()`.
 
 ``` r
-library(SelectiveIntegrative)
 out <- srEC(data_rt = data_rt,
      data_ec = list(data_ec),
      method = 'gbm')
@@ -80,13 +80,13 @@ out <- srEC(data_rt = data_rt,
 # AIPW
 print(paste('AIPW: ', round(out$est$AIPW, 3), 
       ', S.E.: ', round(out$sd$AIPW, 3)))
-#> [1] "AIPW:  -0.491 , S.E.:  2.142"
+#> [1] "AIPW:  -0.513 , S.E.:  2.378"
 # ACW
 print(paste('ACW: ', round(out$est$ACW, 3), 
       ', S.E.: ', round(out$sd$ACW, 3)))
-#> [1] "ACW:  -0.847 , S.E.:  2.26"
+#> [1] "ACW:  -0.847 , S.E.:  2.439"
 # selective integrative estimation
 print(paste('Our: ', round(out$est$ACW.final, 3), 
       ', S.E.: ', round(out$sd$ACW.final, 3)))
-#> [1] "Our:  -0.565 , S.E.:  2.128"
+#> [1] "Our:  -0.531 , S.E.:  2.158"
 ```
