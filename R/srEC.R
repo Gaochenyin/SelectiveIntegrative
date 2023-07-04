@@ -7,7 +7,7 @@
 #'  is the average treatment effect.
 #'
 #' @importFrom glmnet cv.glmnet glmnet
-#'
+#' @importFrom caret train
 #' @param data_rt A list contains X, Y and A for RT. The propensity scores P(A=1|X) can also be
 #' contained as `prob_A` (or `NULL`).
 #' @param data_ec A list contains X and Y for EC with treatment A=0.
@@ -18,8 +18,8 @@
 #' @param ... Other options used to fit the predictive models. Passed on to [caret::train()].
 srEC <- function(data_rt,
                  data_ec = NULL,
-                 rt.ctrl = trainControl(method = 'cv', number = 10),
-                 hc.ctrl = trainControl(method = 'cv', number = 10),
+                 rt.ctrl = caret::trainControl(method = 'cv', number = 10),
+                 hc.ctrl = caret::trainControl(method = 'cv', number = 10),
                  method = 'gbm', ...)
 {
   # assign the variables for analyses
@@ -35,7 +35,7 @@ srEC <- function(data_rt,
   Y0_c <- Y_c[which(A_c==0)]; X0_c <- X_c[which(A_c==0),, drop = F]
   Y1_c <- Y_c[which(A_c==1)]; X1_c <- X_c[which(A_c==1),, drop = F]
   # estimate the outcome model for RT
-  fit.Y.RCT <- train(Y ~ 0 + . + A * (.),
+  fit.Y.RCT <- caret::train(Y ~ 0 + . + A * (.),
                      data = data.frame(Y = Y_c, A = A_c,
                                        X_c),
                      trControl = rt.ctrl,
@@ -327,8 +327,8 @@ srEC <- function(data_rt,
   }
 
   # obtain the final selective integrative estimator for each external controls
-  d_A_n <- c(rep(1, K+1)%*%ginv(Sigma2.group)%*%rep(1, K+1))^{-1} *
-    ginv(Sigma2.group)%*%rep(1, K+1)
+  d_A_n <- c(rep(1, K+1)%*%MASS::ginv(Sigma2.group)%*%rep(1, K+1))^{-1} *
+    MASS::ginv(Sigma2.group)%*%rep(1, K+1)
 
   tau_final <- c(tau_hat_AIPW, tau.acw.lasso.list)%*%d_A_n
   var.final <- c(d_A_n)%*%Sigma2.group%*%d_A_n

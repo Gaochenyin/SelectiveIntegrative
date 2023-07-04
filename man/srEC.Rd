@@ -7,8 +7,9 @@
 srEC(
   data_rt,
   data_ec = NULL,
-  rt.ctrl = list(method = "gbm"),
-  hc.ctrl = list(method = "gbm"),
+  rt.ctrl = caret::trainControl(method = "cv", number = 10),
+  hc.ctrl = caret::trainControl(method = "cv", number = 10),
+  method = "gbm",
   ...
 )
 }
