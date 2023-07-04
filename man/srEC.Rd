@@ -27,6 +27,15 @@ computational nuances for fitting the outcome model using the EC dataset.}
 
 \item{...}{Other options used to fit the predictive models. Passed on to \code{\link[caret:train]{caret::train()}}.}
 }
+\value{
+A list with components:
+\itemize{
+\item est: estimated average treatment effect by AIPW, ACW and the selective integrative estimator.
+\item sd: estimated standard errors for the aforementioned estimators.
+\item subset.idx: a subset of indices of the external controls which have been selected for the
+final integrative estimation.
+}
+}
 \description{
 \code{srEC()} is a penalized dynamic integrative framework to augment a randomized trial (RT)
 with a external control (EC) dataset, in which the subject-level compatibility of the EC

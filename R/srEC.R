@@ -16,6 +16,12 @@
 #' @param hc.ctrl An object of [caret::trainControl()], which controls the
 #' computational nuances for fitting the outcome model using the EC dataset.
 #' @param ... Other options used to fit the predictive models. Passed on to [caret::train()].
+#'
+#' @returns A list with components:
+#' * est: estimated average treatment effect by AIPW, ACW and the selective integrative estimator.
+#' * sd: estimated standard errors for the aforementioned estimators.
+#' * subset.idx: a subset of indices of the external controls which have been selected for the
+#' final integrative estimation.
 srEC <- function(data_rt,
                  data_ec = NULL,
                  rt.ctrl = caret::trainControl(method = 'cv', number = 10),
