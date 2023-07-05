@@ -31,6 +31,7 @@ devtools::install_github("Gaochenyin/SelectiveIntegrative")
 
 ```{r echo=TRUE}
 library(SelectiveIntegrative)
+set.seed(2333)
 # generate data for the whole population
 n_c.E <- 200; n_e.E <- 500
 N <- n_c.E + n_e.E

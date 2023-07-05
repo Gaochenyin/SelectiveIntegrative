@@ -46,7 +46,6 @@ srEC <- function(data_rt,
                      data = data.frame(Y = Y_c, A = A_c,
                                        X_c),
                      trControl = rt.ctrl,
-                     verbose = FALSE,
                      method = method, ...)
   # estimate propensity score (if not provided)
   if(is.null(prob_A))

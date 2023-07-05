@@ -25,6 +25,7 @@ devtools::install_github("Gaochenyin/SelectiveIntegrative")
 
 ``` r
 library(SelectiveIntegrative)
+set.seed(2333)
 # generate data for the whole population
 n_c.E <- 200; n_e.E <- 500
 N <- n_c.E + n_e.E
@@ -42,7 +43,7 @@ eS <- exp(alpha0.opt -2 * X1 - 2 * X2)/
 delta <- rbinom(N, size = 1, prob = eS)
 X.rt <- cbind(X1, X2)[delta == 1, ]
 (n_c <- nrow(X.rt))
-#> [1] 218
+#> [1] 196
 ## generate the treatment assignment with marginal probability P.A
 P.A <- 0.5
 eta0.opt <- uniroot(function(eta0){
@@ -60,7 +61,7 @@ data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
 # generate the external control population
 X.ec <- cbind(X1, X2)[delta == 0, ]
 (n_h <- nrow(X.ec))
-#> [1] 482
+#> [1] 504
 A.ec <- 0
 ## generate the observed outcomes for EC (possibly confounded)
 Y.ec <- as.vector(1 +  X.ec%*%c(1, 1) + omega * rnorm(n_h, mean = 1) + rnorm(n_h))
@@ -83,13 +84,13 @@ out <- srEC(data_rt = data_rt,
 # AIPW
 print(paste('AIPW: ', round(out$est$AIPW, 3), 
       ', S.E.: ', round(out$sd$AIPW, 3)))
-#> [1] "AIPW:  -0.593 , S.E.:  2.228"
+#> [1] "AIPW:  -0.397 , S.E.:  2.158"
 # ACW
 print(paste('ACW: ', round(out$est$ACW, 3), 
       ', S.E.: ', round(out$sd$ACW, 3)))
-#> [1] "ACW:  -1.019 , S.E.:  2.369"
+#> [1] "ACW:  -0.831 , S.E.:  2.538"
 # selective integrative estimation
 print(paste('Our: ', round(out$est$ACW.final, 3), 
       ', S.E.: ', round(out$sd$ACW.final, 3)))
-#> [1] "Our:  -0.582 , S.E.:  2.085"
+#> [1] "Our:  -0.377 , S.E.:  2.006"
 ```
