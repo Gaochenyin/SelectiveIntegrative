@@ -6,7 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The srEC function is to develop an dynamic borrowing framework to
+The srEC function is to develop a dynamic borrowing framework to
 incorporate information from other external-control (EC) datasets with
 the gold-standard randomized trials from [Gao et al.,
 (2023)](https://arxiv.org/pdf/2306.16642.pdf). By adopting the

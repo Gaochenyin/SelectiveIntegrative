@@ -19,7 +19,7 @@ options(warn=-1)
 <!-- badges: start -->
 <!-- badges: end -->
 
-The srEC function is to develop an dynamic borrowing framework to incorporate information from other external-control (EC) datasets with the gold-standard randomized trials from [Gao et al., (2023)](https://arxiv.org/pdf/2306.16642.pdf). By adopting the subject-level bias framework, the comparability of each EC subject is assessed via a penalized estimation. The final integrative estimator will only incorporate the external subjects with the estimated bias being zero (i.e., a comparable subset).
+The srEC function is to develop a dynamic borrowing framework to incorporate information from other external-control (EC) datasets with the gold-standard randomized trials from [Gao et al., (2023)](https://arxiv.org/pdf/2306.16642.pdf). By adopting the subject-level bias framework, the comparability of each EC subject is assessed via a penalized estimation. The final integrative estimator will only incorporate the external subjects with the estimated bias being zero (i.e., a comparable subset).
 
 ## Installation with `devtools`:
 
