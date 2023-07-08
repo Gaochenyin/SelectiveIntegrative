@@ -21,6 +21,13 @@ being zero (i.e., a comparable subset).
 devtools::install_github("Gaochenyin/SelectiveIntegrative")
 ```
 
+## Main Paper:
+
+C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries (2023)
+Integrating Randomized Placebo-Controlled Trial Data with External
+Controls: A Semiparametric Approach with Selective Borrowing.
+<https://arxiv.org/pdf/2306.16642>
+
 ## Example
 
 ``` r
