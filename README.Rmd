@@ -38,28 +38,28 @@ C. Gao, S. Yang*, M. Shan, W. Ye, I. Lipkovich, D. Faries (2023) Integrating Ran
 library(SelectiveIntegrative)
 set.seed(2333)
 # generate data for the whole population
-n_c.E <- 200; n_e.E <- 500
+n_c.E <- 3000; n_e.E <- 1000
 N <- n_c.E + n_e.E
 X1 <- rnorm(N); X2 <- rnorm(N)
 # omega: guage the unmeasured confounding for EC
-omega <- 0.3
+omega <- 3
 # generate the randomized trial population 
 ## generate the selection indicator for RT with expected sample size n_c.E
 alpha0.opt <- uniroot(function(alpha0){
   mean(exp(alpha0 -2 * X1 - 2 * X2)/
   (1 + exp(alpha0 -2 * X1 - 2 * X2))) * N - n_c.E
-}, interval = c(-50, 0))$root
+}, interval = c(-50, 10))$root
 eS <- exp(alpha0.opt -2 * X1 - 2 * X2)/
   (1 + exp(alpha0.opt -2 * X1 - 2 * X2))
 delta <- rbinom(N, size = 1, prob = eS)
 X.rt <- cbind(X1, X2)[delta == 1, ]
 (n_c <- nrow(X.rt))
 ## generate the treatment assignment with marginal probability P.A
-P.A <- 0.5
+P.A <- 2/3
 eta0.opt <- uniroot(function(eta0){
   mean(exp(eta0 - X.rt%*%c(1, 1))/
   (1 + exp(eta0 - X.rt%*%c(1, 1)))) - P.A
-}, interval = c(-50, 0))$root
+}, interval = c(-50, 10))$root
 eA <- exp(eta0.opt - X.rt%*%c(1, 1))/
   (1 + exp(eta0.opt - X.rt%*%c(1, 1)))
 A.rt <- rbinom(n_c, size = 1, prob = eA)
@@ -82,17 +82,17 @@ ready to implement our selective integrative estimation by calling `srEC()`.
 ```{r  echo=TRUE, results='hide'}
 out <- srEC(data_rt = data_rt,
      data_ec = list(data_ec),
-     method = 'gbm')
+     method = 'glm')
 ```
 ```{r echo=TRUE}
 # AIPW
 print(paste('AIPW: ', round(out$est$AIPW, 3), 
-      ', S.E.: ', round(out$sd$AIPW, 3)))
+      ', S.E.: ', round(out$sd$AIPW/sqrt(out$n_c), 3)))
 # ACW
 print(paste('ACW: ', round(out$est$ACW, 3), 
-      ', S.E.: ', round(out$sd$ACW, 3)))
+      ', S.E.: ', round(out$sd$ACW/sqrt(out$n_c), 3)))
 # selective integrative estimation
 print(paste('Our: ', round(out$est$ACW.final, 3), 
-      ', S.E.: ', round(out$sd$ACW.final, 3)))
+      ', S.E.: ', round(out$sd$ACW.final/sqrt(out$n_c), 3)))
 ```
 
