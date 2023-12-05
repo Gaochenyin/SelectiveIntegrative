@@ -95,7 +95,8 @@ srEC <- function(data_rt,
   # the function for the augmented calibration weighting estimator
   EST.ACW.FUN <- function(X_c, Y_c, A_c, prob_A,
                           data_hc,
-                          bias_b_list = list(NULL)){
+                          bias_b_list = list(NULL),
+                          ...){
 
     # obtain the ACW estimator for each external control dataset
     data_ec_i <- mapply(function(ec_i, bias_b){
@@ -148,29 +149,28 @@ srEC <- function(data_rt,
   # obtain the subject-level bias estimates
   bias_h <- lapply(EST.ACW.res$EST.ACW,
                    function(x)as.vector(x$bias_i))
-  bias_h <- mapply(function(x, y)x, x = bias_h)
   # compute the standard error of the bias based on IF
   bias_h.score <- lapply(EST.ACW.res$EST.ACW,
                          function(x)as.vector(x$bias_i.score))
   sd.bias_h <- lapply(EST.ACW.res$EST.ACW,
                       function(x)sqrt(mean({x$bias_i.score-
                           mean(x$bias_i.score)}**2)))
-
+  bias_h <- mapply(function(x, y)x, x = bias_h)
   # subject-level selective borrowing framework
   Z <- factor(rep(1:sum(EST.ACW.res$n_ei)))
   Z.mat <- model.matrix(~Z+0)
   # obtain the OLS estimates for adaptive lasso
   gamma.hat <- unlist(lapply(EST.ACW.res$EST.ACW, function(x)x$gamma.hat))
   # tuning the parameters (omega and lambda)
-  omega.vector <- c(1,2)#rev(seq(1, 2, length.out = 10)) # choose for 10 or 50
-  cv.lasso.vec <- sapply(omega.vector, function(omega){
+  nu.vector <- c(1,2)#rev(seq(1, 2, length.out = 10)) # choose for 10 or 50
+  cv.lasso.vec <- sapply(nu.vector, function(nu){
 
     # specify the lambda vector for cross-validation
-    lambda.vector <- seq(nrow(Z.mat)**-(1+omega/5)/2,
+    lambda.vector <- seq(nrow(Z.mat)**-(1+nu/5)/2,
                          nrow(Z.mat)**(-0.1),
                          length.out = 100)
     # construct the adaptive weights (subject-level)
-    b_k.w <- c(1/abs(gamma.hat)**omega)
+    b_k.w <- c(1/abs(gamma.hat)**nu)
 
     # the penalty factors are re-scaled with sum equal to `nvars`
     b_k.w <- b_k.w/sum(b_k.w)*ncol(Z.mat)
@@ -213,13 +213,13 @@ srEC <- function(data_rt,
     min(trade.off)
   })
   # select the one that minimize the cv error
-  omega.opt <- omega.vector[which.min(cv.lasso.vec)]
-  b_k.OLS <- c(1/abs(gamma.hat)**omega.opt)
+  nu.opt <- nu.vector[which.min(cv.lasso.vec)]
+  b_k.OLS <- c(1/abs(gamma.hat)**nu.opt)
   b_k.w <- b_k.OLS/sum(b_k.OLS)*ncol(Z.mat)
   b_k.w <- sapply(b_k.w, function(x)ifelse(is.na(x), 1e10, x))
 
-  # omega.opt/2 due to a smaller order of convergence rate of the machine learning models
-  lambda.vector <- c(seq(nrow(Z.mat)**-(-.001+omega.opt/3)/2, # change to 3 for conservative convergence rate
+  # nu.opt/3 due to a smaller order of convergence rate of the machine learning models
+  lambda.vector <- c(seq(nrow(Z.mat)**-(-.001+nu.opt/3)/2, # change to 3 for conservative convergence rate
                          nrow(Z.mat)**(-0.001),
                          length.out = 100))
 

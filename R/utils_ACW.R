@@ -48,7 +48,7 @@ estimate_hc <- function(X_h, Y_h,
 
   # use machine learning model to fitting mu_1 and mu_0
   fit.Y.HC <- train(Y ~ .+0, data = data.frame(Y = Y_h, X_h),
-                     trControl = hc.ctrl, ...)
+                     trControl = hc.ctrl)
 
 
   # estimate odds-ratio
@@ -93,20 +93,23 @@ estimate_hc <- function(X_h, Y_h,
   S.ACW.q <- rbind(-X_c, q_hat*X_h)
   dot.S.ACW.q <- t(q_hat*X_h)%*%X_h/n_c
 
-  r_X <- r_X.c <- r_X.h <- mean({predict(fit.Y.RCT, data.frame(X_c[A_c==0,], A = 0)) - mean(Y_c[A_c==0])}**2)/
+  r_X <- mean({predict(fit.Y.RCT, data.frame(X_c[A_c==0,], A = 0)) - mean(Y_c[A_c==0])}**2)/
     tryCatch(mean({predict(fit.Y.HC, data.frame(X_h[bias_b==0, ])) - mean(Y_h[bias_b==0])}**2),
-             error = function(e)1e6) # if no selected, down weight the HC
+             error = function(e)1e6) # if no selected, down weight the HC with extreme values
 
   # prob_b_zero_c <- prob_b_zero_h <- sum(bias_b==0)/n_h
 
   # fit a glm for b==0 against X_h
-  fit.b0.hc <- glm(b0 ~ . +0, data = data.frame(b0 = (bias_b == 0),
-                                                X_h),
-                   family = 'binomial')
-  prob_b_zero_c <- predict(fit.b0.hc, newdata = data.frame(X_c),
-                           type = 'response')
-  prob_b_zero_h <- predict(fit.b0.hc, newdata = data.frame(X_h),
-                           type = 'response')
+  # fit.b0.hc <- glm(b0 ~ . +0, data = data.frame(b0 = (bias_b == 0),
+  #                                               X_h),
+  #                  family = 'binomial')
+  # prob_b_zero_c <- predict(fit.b0.hc, newdata = data.frame(X_c),
+  #                          type = 'response')
+  # prob_b_zero_h <- predict(fit.b0.hc, newdata = data.frame(X_h),
+  #                          type = 'response')
+  b_c.idx <- 0
+  b_h.idx <- bias_b
+
   # fit a glm for A against X_c
   fit.ps <- glm(A~.+0, data = data.frame(A = A_c,
                                        X_c),
@@ -116,42 +119,39 @@ estimate_hc <- function(X_h, Y_h,
 
 
   # construct the influence function
-  dot.mu0_c.q <- apply(c({q_hat.c * r_X * prob_b_zero_c}*
+  dot.mu0_c.q <- apply(c({q_hat.c * r_X * (b_c.idx == 0)}*
                            (1-A_c)*(Y_c - predict(fit.Y.RCT, data.frame(X_c, A = 0)))/
-                           {{r_X * prob_b_zero_c + (1-prob_A)*q_hat.c}**2})*X_c, 2, sum)/n_c
+                           {{r_X * (b_c.idx == 0) + (1-prob_A)*q_hat.c}**2})*X_c, 2, sum)/n_c
 
-  dot.mu0_h.q <- apply(c({q_hat * prob_b_zero_h * r_X**2}*
-                           prob_b_zero_h * (Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0)))/
-                           {{r_X * prob_b_zero_h + (1-prob_A.h)*q_hat}**2})*X_h, 2, sum)/n_c
+  dot.mu0_h.q <- apply(c({q_hat * (b_h.idx == 0) * r_X**2}*
+                           (b_h.idx == 0) * (Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0)))/
+                           {{r_X * (b_h.idx == 0) + (1-prob_A.h)*q_hat}**2})*X_h, 2, sum)/n_c
   mu0_c <- c(predict(fit.Y.RCT, data.frame(X_c, A = 0)) +
-               q_hat.c/{prob_b_zero_c * r_X + (1-prob_A)*q_hat.c}*(1-A_c)*(Y_c - predict(fit.Y.RCT, data.frame(X_c, A = 0))),
+               q_hat.c/{(b_c.idx == 0) * r_X + (1-prob_A)*q_hat.c}*(1-A_c)*(Y_c - predict(fit.Y.RCT, data.frame(X_c, A = 0))),
              rep(0, n_h))
   mu0_h <- c(rep(0, n_c),
-             q_hat*r_X/{prob_b_zero_h * r_X + (1-prob_A.h)*q_hat} *(bias_b==0)*
+             q_hat*r_X/{(b_h.idx == 0) * r_X + (1-prob_A.h)*q_hat} *(b_h.idx == 0)*
                (Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0))))
   mu0_i <- mu0_c + mu0_h
   mu0_score <-  mu0_i -  S.ACW.q%*%t(dot.mu0_c.q%*%MASS::ginv(dot.S.ACW.q)) -
     S.ACW.q%*%t(dot.mu0_h.q%*%MASS::ginv(dot.S.ACW.q))
 
-  # mu0_score <- mu0_score * c(rep(1, n_c), bias_b==0)
-  # sum(mu1_AIPW_i)/n_c - sum(mu0_i)/n_c
-  # dot.tau.ACW.q <- apply(q_hat*c(Y_h - X_h%*%beta_hat_0.h)*X_h,
-  #                        2, sum)/n_c
-
   mu0_ACW.hat <- (sum(mu0_i))/n_c
-  # fit a model for the bias
-  # fit.bias.lm <- lm(bias ~ .+0,
-  #                   data = data.frame(bias = Y_h - predict(fit.Y.RCT.A0, data.frame(X_h)),
-  #                                     X_h))
-  # b.X <- fit.bias.lm$fitted.values
-  bias_i <- q_hat * c(Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0)))*(n_c+n_h)/n_c #-
-    # {q_hat*(n_c+n_h)/n_c - 1}*b.X
 
-   # compute the score for estimating q
-  dot.bias.ACW.q <- apply(q_hat*c(Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0)))*X_h,
-                          2, sum)*(n_c+n_h)/n_c**2
-  bias_i.score <- c(rep(0, n_c), bias_i) -
-    S.ACW.q%*%t(dot.bias.ACW.q%*%MASS::ginv(dot.S.ACW.q))
+  # construct the pseudo-observations for the bias parameters
+  bias_i <- Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0))
+
+  # bias_i <- q_hat * c(Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0)))*(n_c+n_h)/n_c #-
+  #   # {q_hat*(n_c+n_h)/n_c - 1}*b.X
+
+  # compute the score for estimating q
+  bias_i.score <- c(rep(0, n_c), bias_i)
+
+  # dot.bias.ACW.q <- apply(q_hat*c(Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0)))*X_h,
+  #                         2, sum)*(n_c+n_h)/n_c**2
+  # bias_i.score <- c(rep(0, n_c), bias_i) -
+  #   S.ACW.q%*%t(dot.bias.ACW.q%*%MASS::ginv(dot.S.ACW.q))
+
   gamma.hat <- predict(fit.Y.HC, data.frame(X_h)) -
     predict(fit.Y.RCT, data.frame(X_h, A = 0))
 
