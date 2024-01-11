@@ -121,11 +121,13 @@ estimate_hc <- function(X_h, Y_h,
   # construct the influence function
   dot.mu0_c.q <- apply(c({q_hat.c * r_X * (b_c.idx == 0)}*
                            (1-A_c)*(Y_c - predict(fit.Y.RCT, data.frame(X_c, A = 0)))/
-                           {{r_X * (b_c.idx == 0) + (1-prob_A)*q_hat.c}**2})*X_c, 2, sum)/n_c
+                           {{r_X * (b_c.idx == 0) + (1-prob_A)*q_hat.c}**2})*X_c, 2, sum,
+                       na.rm = TRUE)/n_c
 
   dot.mu0_h.q <- apply(c({q_hat * (b_h.idx == 0) * r_X**2}*
                            (b_h.idx == 0) * (Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0)))/
-                           {{r_X * (b_h.idx == 0) + (1-prob_A.h)*q_hat}**2})*X_h, 2, sum)/n_c
+                           {{r_X * (b_h.idx == 0) + (1-prob_A.h)*q_hat}**2})*X_h, 2, sum,
+                       na.rm = TRUE)/n_c
   mu0_c <- c(predict(fit.Y.RCT, data.frame(X_c, A = 0)) +
                q_hat.c/{(b_c.idx == 0) * r_X + (1-prob_A)*q_hat.c}*(1-A_c)*(Y_c - predict(fit.Y.RCT, data.frame(X_c, A = 0))),
              rep(0, n_h))
