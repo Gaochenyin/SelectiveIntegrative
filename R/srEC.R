@@ -119,8 +119,8 @@ srEC <- function(data_rt,
       tau.ACW.lin <- c(mu1_AIPW_i,
                        rep(0, nrow(ec_i$X)))- ec_i$mu0_score # influence function
       sqrt(sum({tau.ACW.lin-
-          c(rep(sum(tau.ACW.lin)/n_c, n_c),
-            rep(0, nrow(ec_i$X)))}**2)*n_c^{-1})
+          c(rep(sum(tau.ACW.lin, na.rm = TRUE)/n_c, n_c),
+            rep(0, nrow(ec_i$X)))}**2, na.rm = TRUE)*n_c^{-1})
     })
     sd_ACW_hat_i
 
@@ -144,7 +144,7 @@ srEC <- function(data_rt,
   tau_hat_AIPW <- sum(tau_0_i)/n_c
   # compute estimate for tau by ACW (RT and EC)
   tau_hat_ACW <- sapply(EST.ACW.res$tau_ec_i,
-                        function(tau_i)sum(tau_i)/n_c)
+                        function(tau_i)sum(tau_i, na.rm = TRUE)/n_c)
 
   # obtain the subject-level bias estimates
   bias_h <- lapply(EST.ACW.res$EST.ACW,
@@ -162,7 +162,7 @@ srEC <- function(data_rt,
   # obtain the OLS estimates for adaptive lasso
   gamma.hat <- unlist(lapply(EST.ACW.res$EST.ACW, function(x)x$gamma.hat))
   # tuning the parameters (omega and lambda)
-  nu.vector <- c(1,2)#rev(seq(1, 2, length.out = 10)) # choose for 10 or 50
+  nu.vector <- c(1,2)#rev(seq(1, 2, length.out = 10)) with length 10 or 50
   cv.lasso.vec <- sapply(nu.vector, function(nu){
 
     # specify the lambda vector for cross-validation
@@ -309,7 +309,8 @@ srEC <- function(data_rt,
     # q_hat.all.lasso <-  lapply(EST.ACW.res.lasso$EST.ACW,  function(x)x$q_hat)
     r_hat.all.lasso <-  lapply(EST.ACW.res.lasso$EST.ACW, function(x)x$r_X)
 
-    tau.acw.lasso.list <- unlist(mapply(function(x, y)sum(x*c(rep(1, n_c), (y==0)))/n_c,
+    tau.acw.lasso.list <- unlist(mapply(function(x, y)sum(x*c(rep(1, n_c), (y==0)),
+                                                          na.rm = TRUE)/n_c,
                                            x = EST.ACW.res.lasso$tau_ec_i,
                                            y = hc.val.lasso.list, SIMPLIFY = FALSE))
 
@@ -321,7 +322,9 @@ srEC <- function(data_rt,
     {
       sapply(EST.ACW.res.lasso$tau_ec_score, function(y)
       {
-        sum({x[1:n_c] - sum(x[1:n_c])/n_c}**2)/n_c
+        sum((x[1:n_c] - sum(x[1:n_c], na.rm = TRUE)/n_c)*
+              (y[1:n_c] - sum(y[1:n_c], na.rm = TRUE)/n_c),
+            na.rm = TRUE)/n_c
       })
     })
 
@@ -333,7 +336,7 @@ srEC <- function(data_rt,
   }
 
   # obtain the final selective integrative estimator for each external controls
-  d_A_n <- c(rep(1, K+1)%*%MASS::ginv(Sigma2.group)%*%rep(1, K+1))^{-1} *
+  d_A_n <- c(rep(1, K+1)%*%MASS::ginv(Sigma2.group)%*%rep(1, K+1))^(-1) *
     MASS::ginv(Sigma2.group)%*%rep(1, K+1)
 
   tau_final <- c(tau_hat_AIPW, tau.acw.lasso.list)%*%d_A_n
