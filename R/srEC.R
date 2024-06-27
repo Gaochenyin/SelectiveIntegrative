@@ -232,7 +232,7 @@ srEC <- function(data_rt,
                      lambda = lambda.vector)
 
   group_indicator <- rep(1:K, times = EST.ACW.res$n_ei)
-  coef.mat <- predict(fitLasso, newx = Z.mat.tilde, type = 'coef')
+  coef.mat <- predict(fitLasso, newx = Z.mat, type = 'coef')
 
   trade.off <- apply(coef.mat, 2,
                      function(x)
