@@ -21,6 +21,20 @@ cal_eqs <- function(par,
   c(left_side-right_side)
 }
 
+cal_eqs.GMM <- function(par,
+                    X_c, X_h)
+{
+
+  weight_cal <- as.numeric(exp(X_h%*%par))
+
+  # dem <- rep(tapply(weight_cal, cluster, sum), times=ni)
+  # special condition for handling cluster-specific nonignorable missingness
+  # weight_cal <- weight_cal/dem*ni
+  left_side <- apply(X_h*weight_cal, 2, sum)
+  right_side <- apply(X_c, 2, sum)
+  sum(c(left_side-right_side)**2)
+}
+
 # estimate the outcome modeling for the external control dataset
 estimate_hc <- function(X_h, Y_h,
                         X_c, Y_c, A_c, prob_A,
@@ -54,14 +68,22 @@ estimate_hc <- function(X_h, Y_h,
   # estimate odds-ratio
   if(ncol(X_c)<n_h)
   {
-    lambda_hat <- BB::dfsane(par = rep(0, dim(X_c)[2]), # initial points
-                         fn=cal_eqs,
-                         X_c = X_c, X_h = X_h,#[bias_b==0,],
-                         control = list(trace=T,
-                                        NM=T,
-                                        BFGS=F,
-                                        tol=1.e-8,
-                                        maxit = 500))$par
+
+    lambda_hat <- tryCatch(BB::dfsane(par = rep(0, dim(X_c)[2]), # initial points
+                        fn=cal_eqs,
+                        X_c = X_c, X_h = X_h,#[bias_b==0,],
+                        control = list(trace=T,
+                                       NM=T,
+                                       BFGS=F,
+                                       tol=1.e-8,
+                                       maxit = 500))$par,
+             warning = function(w){optim(par = rep(0, dim(X_c)[2]), # initial points
+                                         fn=cal_eqs.GMM,
+                                         X_c = X_c, X_h = X_h,#[bias_b==0,],
+                                         control = list(trace=T,
+                                                        abstol=1.e-8,
+                                                        maxit = 500),
+                                         method = 'BFGS')$par})
 
     # cal_eqs(lambda_hat,
     #         X_c, X_h[bias_b==0,])
@@ -93,8 +115,8 @@ estimate_hc <- function(X_h, Y_h,
   S.ACW.q <- rbind(-X_c, q_hat*X_h)
   dot.S.ACW.q <- t(q_hat*X_h)%*%X_h/n_c
 
-  r_X <- mean({predict(fit.Y.RCT, data.frame(X_c[A_c==0,], A = 0)) - mean(Y_c[A_c==0])}**2)/
-    tryCatch(mean({predict(fit.Y.HC, data.frame(X_h[bias_b==0, ])) - mean(Y_h[bias_b==0])}**2),
+  r_X <- mean((predict(fit.Y.RCT, data.frame(X_c[A_c==0,], A = 0)) - mean(Y_c[A_c==0]))**2)/
+    tryCatch(mean((predict(fit.Y.HC, data.frame(X_h[bias_b==0, ])) - mean(Y_h[bias_b==0]))**2),
              error = function(e)1e6) # if no selected, down weight the HC with extreme values
 
   # prob_b_zero_c <- prob_b_zero_h <- sum(bias_b==0)/n_h
@@ -119,20 +141,21 @@ estimate_hc <- function(X_h, Y_h,
 
 
   # construct the influence function
-  dot.mu0_c.q <- apply(c({q_hat.c * r_X * (b_c.idx == 0)}*
+  dot.mu0_c.q <- apply(c((q_hat.c * r_X * (b_c.idx == 0))*
                            (1-A_c)*(Y_c - predict(fit.Y.RCT, data.frame(X_c, A = 0)))/
-                           {{r_X * (b_c.idx == 0) + (1-prob_A)*q_hat.c}**2})*X_c, 2, sum,
+                           ((r_X * (b_c.idx == 0) + (1-prob_A)*q_hat.c)**2))*X_c, 2, sum,
                        na.rm = TRUE)/n_c
 
-  dot.mu0_h.q <- apply(c({q_hat * (b_h.idx == 0) * r_X**2}*
+  dot.mu0_h.q <- apply(c((q_hat * (b_h.idx == 0) * r_X**2)*
                            (b_h.idx == 0) * (Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0)))/
-                           {{r_X * (b_h.idx == 0) + (1-prob_A.h)*q_hat}**2})*X_h, 2, sum,
+                           ((r_X * (b_h.idx == 0) + (1-prob_A.h)*q_hat)**2))*X_h, 2, sum,
                        na.rm = TRUE)/n_c
   mu0_c <- c(predict(fit.Y.RCT, data.frame(X_c, A = 0)) +
-               q_hat.c/{(b_c.idx == 0) * r_X + (1-prob_A)*q_hat.c}*(1-A_c)*(Y_c - predict(fit.Y.RCT, data.frame(X_c, A = 0))),
+               q_hat.c/((b_c.idx == 0) * r_X + (1-prob_A)*q_hat.c)*
+               (1-A_c)*(Y_c - predict(fit.Y.RCT, data.frame(X_c, A = 0))),
              rep(0, n_h))
   mu0_h <- c(rep(0, n_c),
-             q_hat*r_X/{(b_h.idx == 0) * r_X + (1-prob_A.h)*q_hat} *(b_h.idx == 0)*
+             q_hat*r_X/((b_h.idx == 0) * r_X + (1-prob_A.h)*q_hat) *(b_h.idx == 0)*
                (Y_h - predict(fit.Y.RCT, data.frame(X_h, A = 0))))
   mu0_i <- mu0_c + mu0_h
   mu0_score <-  mu0_i -  S.ACW.q%*%t(dot.mu0_c.q%*%MASS::ginv(dot.S.ACW.q)) -

@@ -94,7 +94,7 @@ srEC <- function(data_rt,
 
   # the function for the augmented calibration weighting estimator
   EST.ACW.FUN <- function(X_c, Y_c, A_c, prob_A,
-                          data_hc,
+                          data_ec,
                           bias_b_list = list(NULL),
                           ...){
 
@@ -117,7 +117,7 @@ srEC <- function(data_rt,
     sd_ACW_hat_i <- sapply(data_ec_i, function(ec_i)
     {
       tau.ACW.lin <- c(mu1_AIPW_i,
-                       rep(0, nrow(ec_i$X)))- ec_i$mu0_score # influence function
+                       rep(0, nrow(ec_i$X))) - ec_i$mu0_score # influence function
       sqrt(sum({tau.ACW.lin-
           c(rep(sum(tau.ACW.lin, na.rm = TRUE)/n_c, n_c),
             rep(0, nrow(ec_i$X)))}**2, na.rm = TRUE)*n_c^{-1})
@@ -139,7 +139,7 @@ srEC <- function(data_rt,
 
   EST.ACW.res <- EST.ACW.FUN(X_c = X_c, Y_c = Y_c,
                              A_c = A_c, prob_A = prob_A,
-                             data_hc = data_hc)
+                             data_ec = data_ec)
   # compute estimate for tau by AIPW (RT-only)
   tau_hat_AIPW <- sum(tau_0_i)/n_c
   # compute estimate for tau by ACW (RT and EC)
@@ -301,7 +301,7 @@ srEC <- function(data_rt,
     hc.val.lasso.list <- structure(hc.val.lasso.list, names = NULL)
     EST.ACW.res.lasso <- EST.ACW.FUN(X_c = X_c, Y_c = Y_c,
                                      A_c = A_c, prob_A = prob_A,
-                                     data_hc = data_hc,
+                                     data_ec = data_ec,
                                      bias_b_list = hc.val.lasso.list)
     # construct the eta.all for the post-lasso selection
     q_hat.all.lasso <- mapply(function(x, y)x$q_hat*(y==0), x = EST.ACW.res.lasso$EST.ACW,
