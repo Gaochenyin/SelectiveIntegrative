@@ -202,11 +202,11 @@ srEC <- function(data_rt,
               tau.ACW.score.all <- unlist(lapply(bias_h.score, function(x)x[-(1:n_c)]))
               tau.ACW.lin <- tau.ACW.score.all*c(x[-1]==0)
               var.hi <- tapply(tau.ACW.lin, group_indicator,
-                               function(x) sum(x-sum(x)/n_c)**2/n_c)
+                               function(x) sum({x-sum(x)/n_c}**2)/n_c)
 
               tau.ACW.score.RCT <- lapply(bias_h.score, function(x)x[(1:n_c)])
               var.ci <- unlist(lapply(tau.ACW.score.RCT,
-                                      function(x)sum(x-sum(x)/n_c)**2/n_c))
+                                      function(x)sum({x-sum(x)/n_c}**2)/n_c))
 
               mean(var.hi) + mean(var.ci)
             }) # variance
