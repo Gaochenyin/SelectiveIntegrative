@@ -10,6 +10,7 @@ srEC(
   rt.ctrl = caret::trainControl(method = "cv", number = 10),
   hc.ctrl = caret::trainControl(method = "cv", number = 10),
   method = "gbm",
+  selective = TRUE,
   ...
 )
 }
@@ -24,6 +25,8 @@ computational nuances for fitting the outcome model using the RT dataset.}
 
 \item{hc.ctrl}{An object of \code{\link[caret:trainControl]{caret::trainControl()}}, which controls the
 computational nuances for fitting the outcome model using the EC dataset.}
+
+\item{selective}{Logical. Should a selective borrowing estimator be returned?}
 
 \item{...}{Other options used to fit the predictive models. Passed on to \code{\link[caret:train]{caret::train()}}.}
 }

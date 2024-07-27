@@ -48,30 +48,30 @@ alpha0.opt <- uniroot(function(alpha0){
 eS <- exp(alpha0.opt -2 * X1 - 2 * X2)/
   (1 + exp(alpha0.opt -2 * X1 - 2 * X2))
 delta <- rbinom(N, size = 1, prob = eS)
-X.rt <- cbind(X1, X2)[delta == 1, ]
+X.rt <- cbind(1, X1, X2)[delta == 1, ]
 (n_c <- nrow(X.rt))
 #> [1] 2986
 ## generate the treatment assignment with marginal probability P.A
 P.A <- 2/3
 eta0.opt <- uniroot(function(eta0){
-  mean(exp(eta0 - X.rt%*%c(1, 1))/
-  (1 + exp(eta0 - X.rt%*%c(1, 1)))) - P.A
+  mean(exp(eta0 - X.rt%*%c(1, 1, 1))/
+  (1 + exp(eta0 - X.rt%*%c(1, 1, 1)))) - P.A
 }, interval = c(-50, 10))$root
-eA <- exp(eta0.opt - X.rt%*%c(1, 1))/
-  (1 + exp(eta0.opt - X.rt%*%c(1, 1)))
+eA <- exp(eta0.opt - X.rt%*%c(1, 1, 1))/
+  (1 + exp(eta0.opt - X.rt%*%c(1, 1, 1)))
 A.rt <- rbinom(n_c, size = 1, prob = eA)
 ## generate the observed outcomes for RT
-Y.rt <- as.vector(1 +  X.rt%*%c(1, 1) + A.rt * X.rt%*%c(.3, .3) + rnorm(n_c) + 
+Y.rt <- as.vector(1 +  X.rt%*%c(1, 1, 1) + A.rt * X.rt%*%c(0, .3, .3) + rnorm(n_c) + 
                     omega * rnorm(n_c)) # maintain a similar variation as the EC
 data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
 
 # generate the external control population
-X.ec <- cbind(X1, X2)[delta == 0, ]
+X.ec <- cbind(1, X1, X2)[delta == 0, ]
 (n_h <- nrow(X.ec))
 #> [1] 1014
 A.ec <- 0
 ## generate the observed outcomes for EC (possibly confounded)
-Y.ec <- as.vector(1 +  X.ec%*%c(1, 1) + omega * rnorm(n_h, mean = 1) + rnorm(n_h))
+Y.ec <- as.vector(1 +  X.ec%*%c(1, 1, 1) + omega * rnorm(n_h, mean = 1) + rnorm(n_h))
 data_ec <- list(X = X.ec, A = A.ec, Y = Y.ec)
 ```
 
@@ -95,9 +95,9 @@ print(paste('AIPW: ', round(out$est$AIPW, 3),
 # ACW
 print(paste('ACW: ', round(out$est$ACW, 3), 
       ', S.E.: ', round(out$sd$ACW/sqrt(out$n_c), 3)))
-#> [1] "ACW:  -0.263 , S.E.:  0.153"
+#> [1] "ACW:  -0.369 , S.E.:  0.158"
 # selective integrative estimation
 print(paste('Our: ', round(out$est$ACW.final, 3), 
       ', S.E.: ', round(out$sd$ACW.final/sqrt(out$n_c), 3)))
-#> [1] "Our:  -0.218 , S.E.:  0.152"
+#> [1] "Our:  -0.232 , S.E.:  0.157"
 ```

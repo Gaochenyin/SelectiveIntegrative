@@ -21,6 +21,13 @@ cal_eqs <- function(par,
   c(left_side-right_side)
 }
 
+# gradient for calibration equation
+cal_eqs.gradient <- function(par,
+                             X_c, X_h){
+  weight_cal <- as.numeric(exp(X_h%*%par))
+  t(weight_cal*X_h)%*%X_h
+}
+
 cal_eqs.GMM <- function(par,
                     X_c, X_h)
 {
@@ -62,21 +69,28 @@ estimate_hc <- function(X_h, Y_h,
 
   # use machine learning model to fitting mu_1 and mu_0
   fit.Y.HC <- train(Y ~ .+0, data = data.frame(Y = Y_h, X_h),
-                     trControl = hc.ctrl)
+                     trControl = hc.ctrl, method = method)
 
+
+
+  # # compute the weights by WeightIt package
+  # out.weight <- WeightIt::weightit(as.formula(paste0('S~', paste0(colnames(X_c), collapse = '+'))),
+  #                                  data = data.frame(rbind(cbind(S = 1, X_c),
+  #                                                          cbind(S = 0, X_h))),
+  #                                  method = 'ebal', estimand = 'ATT',
+  #                                  include.obj = T)
 
   # estimate odds-ratio
   if(ncol(X_c)<n_h)
   {
 
-    lambda_hat <- tryCatch(BB::dfsane(par = rep(0, dim(X_c)[2]), # initial points
-                        fn=cal_eqs,
-                        X_c = X_c, X_h = X_h,#[bias_b==0,],
-                        control = list(trace=T,
-                                       NM=T,
-                                       BFGS=F,
-                                       tol=1.e-8,
-                                       maxit = 500))$par,
+    lambda_hat <- tryCatch(nleqslv::nleqslv(x = rep(0, dim(X_c)[2]), # initial points
+                                            fn=cal_eqs,
+                                            jac=cal_eqs.gradient,
+                                            X_c = X_c, X_h = X_h,#[bias_b==0,],
+                                            control = list(trace=F,
+                                                           maxit = 500),
+                                            method = 'Newton')$x,
              warning = function(w){optim(par = rep(0, dim(X_c)[2]), # initial points
                                          fn=cal_eqs.GMM,
                                          X_c = X_c, X_h = X_h,#[bias_b==0,],
@@ -107,7 +121,6 @@ estimate_hc <- function(X_h, Y_h,
     #                                     tol=1.e-8,
     #                                     maxit = 500))$par
   }
-
 
   q_hat <- as.numeric(exp(X_h%*%lambda_hat))
   q_hat.c <- as.numeric(exp(X_c%*%lambda_hat))
