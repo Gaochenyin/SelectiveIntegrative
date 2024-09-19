@@ -51,6 +51,7 @@ delta <- rbinom(N, size = 1, prob = eS)
 X.rt <- cbind(1, X1, X2)[delta == 1, ]
 (n_c <- nrow(X.rt))
 #> [1] 2986
+#> [1] 2986
 ## generate the treatment assignment with marginal probability P.A
 P.A <- 2/3
 eta0.opt <- uniroot(function(eta0){
@@ -68,6 +69,7 @@ data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
 # generate the external control population
 X.ec <- cbind(1, X1, X2)[delta == 0, ]
 (n_h <- nrow(X.ec))
+#> [1] 1014
 #> [1] 1014
 A.ec <- 0
 ## generate the observed outcomes for EC (possibly confounded)
@@ -99,5 +101,5 @@ print(paste('ACW: ', round(out$est$ACW, 3),
 # selective integrative estimation
 print(paste('Our: ', round(out$est$ACW.final, 3), 
       ', S.E.: ', round(out$sd$ACW.final/sqrt(out$n_c), 3)))
-#> [1] "Our:  -0.338 , S.E.:  0.157"
+#> [1] "Our:  -0.235 , S.E.:  0.158"
 ```
