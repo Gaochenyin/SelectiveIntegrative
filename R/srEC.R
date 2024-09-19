@@ -46,10 +46,10 @@ srEC <- function(data_rt,
   Y1_c <- Y_c[which(A_c==1)]; X1_c <- X_c[which(A_c==1),, drop = F]
   # estimate the outcome model for RT
   fit.Y.RCT <- caret::train(Y ~ 0 + . + A * (.),
-                     data = data.frame(Y = Y_c, A = A_c,
-                                       X_c),
-                     trControl = rt.ctrl,
-                     method = method, ...)
+                            data = data.frame(Y = Y_c, A = A_c,
+                                              X_c),
+                            trControl = rt.ctrl,
+                            method = method, ...)
   # estimate propensity score (if not provided)
   if(is.null(prob_A))
   {
@@ -238,6 +238,13 @@ srEC <- function(data_rt,
     lambda.vector <- c(seq(nrow(Z.mat)**-(-.001+nu.opt/3)/2, # change to 3 for conservative convergence rate
                            nrow(Z.mat)**(-0.001),
                            length.out = 100))
+
+    # specify the lambda vector for cross-validation
+    min.lambda <- nrow(Z.mat)^-(1.0 + nu.opt / 5.0) / 2.0
+    max_lambda <- nrow(Z.mat)^{-0.1}
+    if (max_lambda < min.lambda) max_lambda <- max(0.9, min.lambda + 0.1)
+
+    lambda_vector <- seq(min.lambda, max_lambda, length.out = 100L)
 
     fitLasso <- glmnet(Z.mat, bias_h, family = 'gaussian',
                        alpha = 1,

@@ -54,6 +54,7 @@ eS <- exp(alpha0.opt -2 * X1 - 2 * X2)/
 delta <- rbinom(N, size = 1, prob = eS)
 X.rt <- cbind(1, X1, X2)[delta == 1, ]
 (n_c <- nrow(X.rt))
+#> [1] 2986
 ## generate the treatment assignment with marginal probability P.A
 P.A <- 2/3
 eta0.opt <- uniroot(function(eta0){
@@ -71,6 +72,7 @@ data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
 # generate the external control population
 X.ec <- cbind(1, X1, X2)[delta == 0, ]
 (n_h <- nrow(X.ec))
+#> [1] 1014
 A.ec <- 0
 ## generate the observed outcomes for EC (possibly confounded)
 Y.ec <- as.vector(1 +  X.ec%*%c(1, 1, 1) + omega * rnorm(n_h, mean = 1) + rnorm(n_h))

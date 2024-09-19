@@ -95,9 +95,9 @@ print(paste('AIPW: ', round(out$est$AIPW, 3),
 # ACW
 print(paste('ACW: ', round(out$est$ACW, 3), 
       ', S.E.: ', round(out$sd$ACW/sqrt(out$n_c), 3)))
-#> [1] "ACW:  -0.369 , S.E.:  0.158"
+#> [1] "ACW:  -0.52 , S.E.:  0.157"
 # selective integrative estimation
 print(paste('Our: ', round(out$est$ACW.final, 3), 
       ', S.E.: ', round(out$sd$ACW.final/sqrt(out$n_c), 3)))
-#> [1] "Our:  -0.232 , S.E.:  0.157"
+#> [1] "Our:  -0.338 , S.E.:  0.157"
 ```
