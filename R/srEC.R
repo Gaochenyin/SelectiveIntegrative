@@ -239,6 +239,12 @@ srEC <- function(data_rt,
                            nrow(Z.mat)**(-0.001),
                            length.out = 100))
 
+    min.lambda <- nrow(Z.mat)^-(1.0 + nu.opt / 5.0) / 2.0
+    max_lambda <- nrow(Z.mat)^{-0.1}
+    if (max_lambda < min.lambda) max_lambda <- max(0.9, min.lambda + 0.1)
+
+    lambda.vector <- seq(min.lambda, max_lambda, length.out = 100L)
+
     # specify the lambda vector for cross-validation
     min.lambda <- nrow(Z.mat)^-(1.0 + nu.opt / 5.0) / 2.0
     max_lambda <- nrow(Z.mat)^{-0.1}
