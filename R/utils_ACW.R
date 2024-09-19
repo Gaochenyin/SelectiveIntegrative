@@ -143,6 +143,8 @@ estimate_hc <- function(X_h, Y_h,
   # prob_b_zero_h <- predict(fit.b0.hc, newdata = data.frame(X_h),
   #                          type = 'response')
   b_c.idx <- 0
+  # bias_b == 0 can be a estimator for the conditional probability
+  ## the consistency of this conditional probability is not important
   b_h.idx <- bias_b
 
   # fit a glm for A against X_c
