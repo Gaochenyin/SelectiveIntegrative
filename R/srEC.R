@@ -33,6 +33,7 @@ srEC <- function(data_rt,
                  ...)
 {
   # assign the variables for analyses
+  n_c <- nrow(data_rt$X)
   X_c <- data_rt$X
   Y_c <- data_rt$Y; n_c <- length(Y_c)
   A_c <- data_rt$A
@@ -83,9 +84,9 @@ srEC <- function(data_rt,
                 est = list(AIPW = tau_hat_AIPW,
                            ACW = tau_hat_AIPW,
                            ACW.lasso = tau_hat_AIPW),
-                sd = list(AIPW = sd_AIPW_hat,
-                          ACW = sd_AIPW_hat,
-                          ACW.lasso = sd_AIPW_hat),
+                sd = list(AIPW = sd_AIPW_hat/sqrt(n_c),
+                          ACW = sd_AIPW_hat/sqrt(n_c),
+                          ACW.lasso = sd_AIPW_hat/sqrt(n_c)),
                 CI = list(lower = tau_lower_initial,
                           upper = tau_upper_initial),
                 subset.idx = integer(0)))
@@ -157,8 +158,8 @@ srEC <- function(data_rt,
                 est = list(AIPW = tau_hat_AIPW,
                            ACW = tau_hat_ACW
                 ),
-                sd = list(AIPW = sd_AIPW_hat,
-                          ACW = sd_ACW_hat_i
+                sd = list(AIPW = sd_AIPW_hat/sqrt(n_c),
+                          ACW = sd_ACW_hat_i/sqrt(n_c)
                 )))
   }else{
     # adaptive lasso for selective borrowing
@@ -315,9 +316,9 @@ srEC <- function(data_rt,
                   est = list(AIPW = tau_hat_AIPW,
                              ACW = tau_hat_ACW,
                              ACW.lasso = tau_final),
-                  sd = list(AIPW = sd_AIPW_hat,
-                            ACW = sd_ACW_hat_i,
-                            ACW.lasso = sd_final),
+                  sd = list(AIPW = sd_AIPW_hat/sqrt(n_c),
+                            ACW = sd_ACW_hat_i/sqrt(n_c),
+                            ACW.lasso = sd_final/sqrt(n_c)),
                   CI = list(lower = tau_cont_lower,
                             upper = tau_cont_upper),
                   subset.idx = hc.idx.lasso))
@@ -380,10 +381,10 @@ srEC <- function(data_rt,
                            ACW.lasso = tau.acw.lasso.list,
                            ACW.final = tau_final
                 ),
-                sd = list(AIPW = sd_AIPW_hat,
-                          ACW = sd_ACW_hat_i,
-                          ACW.lasso = sqrt(var.acw.lasso.list),
-                          ACW.final = sd_final
+                sd = list(AIPW = sd_AIPW_hat/sqrt(n_c),
+                          ACW = sd_ACW_hat_i/sqrt(n_c),
+                          ACW.lasso = sqrt(var.acw.lasso.list)/sqrt(n_c),
+                          ACW.final = sd_final/sqrt(n_c)
                 ),
                 subset.idx = hc.idx.lasso))
   }

@@ -92,14 +92,14 @@ out <- srEC(data_rt = data_rt,
 ``` r
 # AIPW
 print(paste('AIPW: ', round(out$est$AIPW, 3), 
-      ', S.E.: ', round(out$sd$AIPW/sqrt(out$n_c), 3)))
+      ', S.E.: ', round(out$sd$AIPW, 3)))
 #> [1] "AIPW:  -0.229 , S.E.:  0.161"
 # ACW
 print(paste('ACW: ', round(out$est$ACW, 3), 
-      ', S.E.: ', round(out$sd$ACW/sqrt(out$n_c), 3)))
+      ', S.E.: ', round(out$sd$ACW, 3)))
 #> [1] "ACW:  -0.52 , S.E.:  0.157"
 # selective integrative estimation
 print(paste('Our: ', round(out$est$ACW.final, 3), 
-      ', S.E.: ', round(out$sd$ACW.final/sqrt(out$n_c), 3)))
+      ', S.E.: ', round(out$sd$ACW.final, 3)))
 #> [1] "Our:  -0.235 , S.E.:  0.158"
 ```
