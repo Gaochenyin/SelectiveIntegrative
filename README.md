@@ -24,11 +24,12 @@ devtools::install_github("Gaochenyin/SelectiveIntegrative")
 
 1.  C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries.
     Improving randomized controlled trial analysis with data-adaptive
-    borrowing. Biometrika (2025).
+    borrowing. *Biometrika* (2025).
 
 2.  C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries. Doubly
     protected estimation for survival outcomes utilizing external
-    controls for randomized clinical trials. ICML (2025).
+    controls for randomized clinical trials. *International Conference
+    on Machine Learning (ICML)* (2025).
 
 ## Example
 
