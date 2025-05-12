@@ -6,14 +6,13 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The srEC function is to develop a dynamic borrowing framework to
-incorporate information from other external-control (EC) datasets with
-the gold-standard randomized trials from [Gao et al.,
-(2023)](https://arxiv.org/pdf/2306.16642.pdf). By adopting the
+The srEC package is to develop a data-adaptive borrowing framework to
+incorporate external-controls (EC) with the trial data, which could
+potentially facilitate the drug development. By adopting the
 subject-level bias framework, the comparability of each EC subject is
 assessed via a penalized estimation. The final integrative estimator
-will only incorporate the external subjects with the estimated bias
-being zero (i.e., a comparable subset).
+will only incorporate the ECs with the estimated bias being zero (i.e.,
+a comparable subset).
 
 ## Installation with `devtools`:
 
@@ -23,10 +22,13 @@ devtools::install_github("Gaochenyin/SelectiveIntegrative")
 
 ## Main Paper:
 
-C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries (2023)
-Integrating Randomized Placebo-Controlled Trial Data with External
-Controls: A Semiparametric Approach with Selective Borrowing.
-<https://arxiv.org/pdf/2306.16642>
+1.  C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries.
+    Improving randomized controlled trial analysis with data-adaptive
+    borrowing. Biometrika (2025).
+
+2.  C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries. Doubly
+    protected estimation for survival outcomes utilizing external
+    controls for randomized clinical trials. ICML (2025).
 
 ## Example
 
@@ -85,8 +87,8 @@ estimation by calling `srEC()`.
 out <- srEC(data_rt = data_rt,
      data_ec = list(data_ec),
      method = 'glm')
-#> 载入需要的程辑包：ggplot2
-#> 载入需要的程辑包：lattice
+#> Loading required package: ggplot2
+#> Loading required package: lattice
 ```
 
 ``` r
