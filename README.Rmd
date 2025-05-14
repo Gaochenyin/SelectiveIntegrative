@@ -27,14 +27,7 @@ The srEC package is to develop a data-adaptive borrowing framework to incorporat
 devtools::install_github("Gaochenyin/SelectiveIntegrative")
 ```
 
-
-## Main Paper: 
-
-1. C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries. Improving randomized controlled trial analysis with data-adaptive borrowing. *Biometrika* (2025).
-
-2. C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries. Doubly protected estimation for survival outcomes utilizing external controls for randomized clinical trials. *International Conference on Machine Learning (ICML)* (2025).
-
-## Example
+## Example 1: data-adaptive borrowing for continuous outcomes
 
 ```{r echo=TRUE}
 library(SelectiveIntegrative)
@@ -100,3 +93,172 @@ print(paste('Our: ', round(out$est$ACW.final, 3),
       ', S.E.: ', round(out$sd$ACW.final, 3)))
 ```
 
+
+## Example 2: data-adaptive borrowing for survival outcomes
+
+```{r include=FALSE}
+library(SelectiveIntegrative)
+library(survival)
+set.seed(2333)
+# generate data for the whole population
+N.R1 <- 500; N.R0 <- 200; N.E <- 500
+N <- N.R1 + N.R0 + N.E
+# generate covaraiates
+p <- 3
+X <- replicate(p, rnorm(N))
+# omega: guage the unmeasured confounding for EC
+omega <- 0.5
+# generate unmeasured confounder
+U <- rnorm(N)
+# generate data origin indicator
+alphaR.opt <- uniroot(f = function(alpha0){
+  mean(exp(alpha0 + X%*%rep(1, p) + omega * U)/{1+exp(alpha0 + X%*%rep(1, p) + omega * U)} * N) - 
+    N.R1 - N.R0
+}, c(-10, 10))$root
+
+prob.R <- exp(alphaR.opt + X%*%rep(1, p) + omega * U)/
+  {1+exp(alphaR.opt + X%*%rep(1, p) + omega * U)}
+
+R <- rbinom(N, size = 1, prob = prob.R)
+X.R <- X[R==1, ]; X.E <- X[R==0, ]
+U.R <- U[R == 1]; U.E <- U[R == 0]
+N.R <- sum(R==1)
+
+## RCT
+alphaA.opt <- uniroot(f = function(alpha0){
+  mean(exp(alpha0 + X.R%*%rep(1, p))/{1+exp(alpha0 + X.R%*%rep(1, p))} * (N.R1 + N.R0)) -
+    N.R1
+}, c(-10, 10))$root
+
+prob.A <- exp(alphaA.opt + X.R%*%rep(1, p))/
+  {1+exp(alphaA.opt + X.R%*%rep(1, p))}
+
+A <- rbinom(N.R, size = 1, prob = prob.A)
+
+# update the true NR1, NR0, NE
+N.R1 <- sum(A==1); N.R0 <- sum(A==0)
+N.E <- sum(R==0)
+# treatment effect
+eta_A <- -0.5
+# model for event time
+f.X <- function(A, X.R, b.f, R,
+                beta.X = rep(-.2, p),
+                omega = 0,
+                t_validity = TRUE,
+                delta_T = 0){
+  N <- nrow(X.R)
+  # generate unmeasured confounder
+  if(R){U <- rnorm(N)
+  }else{U <- rnorm(N) + 1}
+  # generate time incurrency bias
+  bias <- delta_T * sample(c(0,5), size = N,
+                           prob = c(0.5, 0.5),
+                           replace = TRUE) * (1-R)
+  if(R|t_validity){
+    c(exp(eta_A * A +  X.R%*%beta.X + omega * U + bias))
+  }else{
+    1/c(exp(eta_A * A +  X.R%*%beta.X + omega * U + bias))^b.f
+  }
+}
+## survival function
+surv.fct <- function(t, A, X.R,
+                     b.f, g.f, R, 
+                     beta.X = rep(-.2, p),
+                     omega = 0,
+                     t_validity = TRUE, 
+                     delta_T = 0){
+  exp(-f.X(A, X.R, b.f, R, beta.X,
+           omega, t_validity, delta_T) * t^g.f/b.f^g.f)
+}
+
+## hazard function
+hazard.fct <- function(t, A, X.R, 
+                       b.f, g.f, R, 
+                       beta.X = rep(-.2, p),
+                       omega = 0,
+                       t_validity = TRUE, 
+                       delta_T = 0){
+  g.f/b.f^g.f * t^{g.f-1} * f.X(A, X.R, b.f, R, beta.X,
+                                omega, t_validity, delta_T)
+  # {-b^g * log(1-u)/{exp(0.5 * X1 + 0.1 * X2 - A)}}^(1/g)
+}
+surv.fct.inv <- function(u, A, X.R, 
+                         b.f, g.f, R, 
+                         beta.X = rep(-.2, p),
+                         omega = 0,
+                         t_validity = TRUE, 
+                         delta_T = 0){
+  b.f * {-log(u)/f.X(A, X.R, b.f, R, beta.X,
+                     omega, t_validity, delta_T)}^{1/g.f}
+}
+
+
+# model for censor time
+fC.X <- function(X.R){
+      c(exp(X.R%*%rep(0.1, p)))
+    }
+surv.fct.c <- function(t, X.R, b.c, g.c){
+  exp(-fC.X(X.R) * t^g.c/b.c^g.c)
+}
+
+surv.fct.c.inv <- function(u, X.R, b.c, g.c){
+  b.c * {-log(u)/fC.X(X.R)}^{1/g.c}
+}
+
+
+b.f <<- 1
+# generate the outcome T by the cumulative density function of the Weibull distribution
+event.timeR <- surv.fct.inv(runif(N.R), A = A, X.R = X.R, 
+                            b.f = b.f, g.f = 1,
+                            R = 1, 
+                            beta.X = rep(-.2, p),
+                            omega = omega)
+# compute the theoretical censoring probability by numerically integral
+b.c <<- 1
+cens.timeR <- surv.fct.c.inv(runif(N.R), X.R = X.R, 
+                             b.c = b.c, g.c = 1)
+## EC
+event.timeE <- surv.fct.inv(runif(N.E), 
+                            A = 0, X.R = X.E,
+                            R = 0, 
+                            beta.X = rep(-.2, p),
+                            omega = omega,
+                            b.f = 1, g.f = 1)
+cens.timeE <- surv.fct.c.inv(runif(N.E), X.R = X.E, 
+                             b.c = b.c, g.c = 1)
+```
+
+```{r echo=TRUE}
+data_rt <- data.frame(Y = pmin(event.timeR, cens.timeR),
+                      D = as.numeric(event.timeR <= cens.timeR), 
+                      X.R, A = A)
+data_ec <- data.frame(Y = pmin(event.timeE, cens.timeE), 
+                    D = as.numeric(event.timeE <= cens.timeE),
+                    X.E)
+head(data_rt); head(data_ec)
+```
+
+Now, we have generated the RT dataset `data_rt` and the EC dataset `data_ec` for the survival outcomes. We are ready to implement our selective integrative estimation by calling `srEC_Surv()`.
+```{r  echo=TRUE, results='hide'}
+out_Surv <- srEC_Surv(data_rt = data_rt,
+                 data_ec = data_ec, 
+                 k_grid = 1:4, 
+                 X.pred.R = c('X1', 'X2', 'X3'),
+                 X.pred.A = c('X1', 'X2', 'X3'),
+                 X.pred.c = c('X1', 'X2', 'X3'),
+                 X.pred.f = c('A', 'X1', 'X2', 'X3'))
+```
+```{r echo=TRUE}
+# AIPW
+out_Surv$aipcw.RCT
+# ACW
+out_Surv$aipcw
+# selective integrative estimation
+out_Surv$aipcw_lasso
+```
+
+## Referenced Papers: 
+
+1. C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries. Improving randomized controlled trial analysis with data-adaptive borrowing. *Biometrika* (2025).
+
+2. C. Gao, S. Yang\*, M. Shan, W. Ye, I. Lipkovich, D. Faries. Doubly protected estimation for survival outcomes utilizing external controls for randomized clinical trials. *International Conference on Machine Learning (ICML)* (2025).

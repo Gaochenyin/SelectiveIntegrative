@@ -9,7 +9,7 @@ Description: Selective Integrative Analyses of the Average Treatment Effect Comb
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.2
 Imports: 
     glmnet (>= 4.1.4),
     MASS,
@@ -21,4 +21,3 @@ VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)
 LazyData: true
-

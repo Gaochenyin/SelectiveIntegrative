@@ -234,3 +234,37 @@ estimate_hc <- function(X_h, Y_h,
 # handy functions
 expit <- function(x){exp(x)/{1+exp(x)}}
 
+RMST <- function(S1.curve, S0.curve, k_grid){
+
+  # if start with 0
+  if(k_grid[1] != 0){
+    k_grid <- c(0, k_grid)
+    S1.curve <- c(1, S1.curve)
+    S0.curve <- c(1, S0.curve)
+  }
+
+  MST1 <- RMST.surv(S1.curve, k_grid)
+  MST0 <- RMST.surv(S0.curve, k_grid)
+
+  cbind(tau = k_grid[-1],
+        S1 = S1.curve[-1], S0 = S0.curve[-1],
+        RMST = c(MST1[, 'MST']-MST0[, 'MST']))
+}
+
+RMST.surv <- function(S.curve, k_grid){
+
+  # if start with 0
+  if(k_grid[1] != 0){
+    k_grid <- c(0, k_grid)
+    S.curve <- c(1, S.curve)
+  }
+
+  num <- length(k_grid)
+  len.avg <- mean(diff(k_grid))
+  MST.surv <- cumsum(stats::filter(S.curve,
+                                   filter = c(1, 1),
+                                   method = 'convolution') * len.avg/2)[1:length(k_grid)]
+  cbind(tau = k_grid[-1],
+        surv = S.curve[-1],
+        MST = MST.surv[-num])
+}
