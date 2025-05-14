@@ -1,11 +1,11 @@
 Package: SelectiveIntegrative
-Title: Selective Integrative Analyses of the Average Treatment Effect Combining External Controls with the Standard Randomized Clinic Trial
-Version: 1.0
+Title: Selective Integrative Analyses for the Average Treatment Effect
+Version: 2.0
 Authors@R: c(
     person("Shu", "Yang", , "syang24@ncsu.edu", role = c("aut")),
     person("Chenyin", "Gao", , "cgao6@ncsu.edu", role = c("aut", "cre"))
     )
-Description: Selective Integrative Analyses of the Average Treatment Effect Combining External Controls with the Standard Randomized Clinic Trial.
+Description: Selective Integrative Analyses of the Average Treatment Effect Combining External Controls with the Standard Randomized Clinic Trial for Continuous and Survival Outcomes.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -13,6 +13,7 @@ RoxygenNote: 7.3.2
 Imports: 
     glmnet (>= 4.1.4),
     MASS,
+    survival,
     BB    
 Suggests: 
     knitr,

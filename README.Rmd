@@ -107,7 +107,6 @@ print(paste('Our: ', round(out$est$ACW.final, 3),
 
 ```{r include=FALSE}
 library(SelectiveIntegrative)
-library(survival)
 set.seed(2333)
 # generate data for the whole population
 N.R1 <- 500; N.R0 <- 200; N.E <- 500

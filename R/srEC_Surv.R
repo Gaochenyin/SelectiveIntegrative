@@ -7,7 +7,7 @@
 #'  is the average treatment effect in terms of the restricted mean survival time (RMST).
 #'
 #' @importFrom glmnet cv.glmnet glmnet
-#' @importFrom caret train
+#' @importFrom survival coxph Surv
 #' @param data_rt A list contains X, Y, D and A for RT. The propensity scores P(A=1|X) can also be
 #' contained as `prob_A` (or `NULL`).
 #' @param data_ec A list contains X, Y, and D for EC with treatment A=0.
@@ -83,8 +83,8 @@ srEC_Surv <- function(data_rt,
                            k_grid # evaluation
   ){
 
-    event.base <- basehaz(fit.surv.obj, centered = FALSE)
-    cens.base <- basehaz(fit.cens.obj, centered = FALSE)
+    event.base <- survival::basehaz(fit.surv.obj, centered = FALSE)
+    cens.base <- survival::basehaz(fit.cens.obj, centered = FALSE)
 
     risk.event <- predict(fit.surv.obj,
                           newdata = data.frame(R = 1,
@@ -231,10 +231,10 @@ srEC_Surv <- function(data_rt,
       # covariates with all zeros
       # baseline hazard functions
       event.base.R1 <- event.base.R0 <-
-        basehaz(fit.surv.obj, centered = FALSE)
+        survival::basehaz(fit.surv.obj, centered = FALSE)
 
       cens.base.R1 <- cens.base.R0 <-
-        basehaz(fit.cens.obj, centered = FALSE)
+        survival::basehaz(fit.cens.obj, centered = FALSE)
 
       model_list$risk.event.R1 <- predict(fit.surv.obj,
                                           newdata = data.frame(R = 1,
