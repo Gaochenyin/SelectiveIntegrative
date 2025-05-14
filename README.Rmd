@@ -79,7 +79,8 @@ omega <- 3
 # RT data and EC data
 data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
 data_ec <- list(X = X.ec, A = A.ec, Y = Y.ec)
-head(data_rt); head(data_ec)
+str(data_rt)
+str(data_ec)
 ```
 
 Now, we have generated the RT dataset `data_rt` and the EC dataset `data_ec`. We are
@@ -246,7 +247,8 @@ data_rt <- data.frame(Y = pmin(event.timeR, cens.timeR),
 data_ec <- data.frame(Y = pmin(event.timeE, cens.timeE), 
                     D = as.numeric(event.timeE <= cens.timeE),
                     X.E)
-head(data_rt); head(data_ec)
+head(data_rt)
+head(data_ec)
 ```
 
 Now, we have generated the RT dataset `data_rt` and the EC dataset `data_ec` for the survival outcomes. We are ready to implement our selective integrative estimation by calling `srEC_Surv()`.
