@@ -29,7 +29,7 @@ devtools::install_github("Gaochenyin/SelectiveIntegrative")
 
 ## Example 1: data-adaptive borrowing for continuous outcomes
 
-```{r echo=TRUE}
+```{r include=FALSE}
 library(SelectiveIntegrative)
 set.seed(2333)
 # generate data for the whole population
@@ -62,7 +62,7 @@ A.rt <- rbinom(n_c, size = 1, prob = eA)
 ## generate the observed outcomes for RT
 Y.rt <- as.vector(1 +  X.rt%*%c(1, 1, 1) + A.rt * X.rt%*%c(0, .3, .3) + rnorm(n_c) + 
                     omega * rnorm(n_c)) # maintain a similar variation as the EC
-data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
+
 
 # generate the external control population
 X.ec <- cbind(1, X1, X2)[delta == 0, ]
@@ -71,7 +71,15 @@ X.ec <- cbind(1, X1, X2)[delta == 0, ]
 A.ec <- 0
 ## generate the observed outcomes for EC (possibly confounded)
 Y.ec <- as.vector(1 +  X.ec%*%c(1, 1, 1) + omega * rnorm(n_h, mean = 1) + rnorm(n_h))
+```
+
+```{r echo=TRUE}
+# omega: guage the unmeasured confounding for EC
+omega <- 3
+# RT data and EC data
+data_rt <- list(X = X.rt, A = A.rt, Y = Y.rt)
 data_ec <- list(X = X.ec, A = A.ec, Y = Y.ec)
+head(data_rt); head(data_ec)
 ```
 
 Now, we have generated the RT dataset `data_rt` and the EC dataset `data_ec`. We are
@@ -229,6 +237,9 @@ cens.timeE <- surv.fct.c.inv(runif(N.E), X.R = X.E,
 ```
 
 ```{r echo=TRUE}
+# omega: guage the unmeasured confounding for EC
+omega <- 0.5
+# RT data and EC data
 data_rt <- data.frame(Y = pmin(event.timeR, cens.timeR),
                       D = as.numeric(event.timeR <= cens.timeR), 
                       X.R, A = A)
